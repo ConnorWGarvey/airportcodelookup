@@ -6,6 +6,7 @@ import org.openqa.selenium.WebElement
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.chrome.ChromeDriverService
 import org.openqa.selenium.firefox.FirefoxDriver
+import org.openqa.selenium.NoSuchElementException
 import org.openqa.selenium.remote.DesiredCapabilities
 import org.openqa.selenium.remote.RemoteWebDriver
 import org.openqa.selenium.support.ui.ExpectedCondition
@@ -13,6 +14,7 @@ import org.openqa.selenium.support.ui.WebDriverWait
 
 class CodeSearch {
     private static final AIRPORT_LABELS = ['Airport', 'Field', 'Airstrip']
+    private static final ABBREVIATIONS = ['Int.':'International']
     private WebDriver driver
     private static ChromeDriverService service
     
@@ -20,11 +22,18 @@ class CodeSearch {
       startService()
       def search = new CodeSearch()
       search.createDriver()
-      for (code in ['PEA', 'PEB', 'PED', 'PEE', 'PEF', 'PEG', 'PEH', 'PEI', 'PEJ', 'PEK', 'PEL', 'PEM', 'PEN', 'PEP', 'PEQ', 'PER', 'PES', 'PET', 'PEU', 'PEV', 'PEW', 'PEX', 'PEY', 'PEZ', 'PFA', 'PFB', 'PFC', 'PFD', 'PFJ', 'PFN', 'PFO', 'PFQ', 'PFR']) {
-        search.doSearch(code:code)
+      def output = new StringBuilder()
+      def codes = '''PHA
+PGZ
+PHC'''
+      for (code in codes.split('\n')) {
+        output.append('\n' + search.doSearch(code:code))
       }
       search.stopDriver()
       stopService()
+      println('-' * 80)
+      println(output.toString().substring(1))
+      println('-' * 80)
     }
     
     private static startService() {
@@ -50,18 +59,31 @@ class CodeSearch {
         driver.quit()
     }
     
-    private void doSearch(Map options=[:]) {
+    private String doSearch(Map options=[:]) {
         driver.get('http://www.world-airport-codes.com/')
         setText('criteria', options.code)
         driver.findElement(By.xpath('//*[@id="maincontent"]/div[3]/div[1]/div/center/form/input[3]')).click()
-        def airport = driver.findElement(By.xpath('//*[@id="maincontent"]/div[2]/div/div[1]/span[2]')).text
-        airport = airport.substring(1, airport.length() - 3).trim()
-        def city = driver.findElement(By.xpath('//*[@id="maincontent"]/div[2]/div/div[1]/span[5]')).text
-        city = city.substring(1, city.length() - 3).trim()
-        println "${city}\t${city}\t${englishAirport(airport)}\t${spanishAirport(airport)}"
+        try {
+          def airport = driver.findElement(By.xpath('//*[@id="maincontent"]/div[2]/div/div[1]/span[2]')).text
+          airport = airport.substring(1, airport.length() - 3).trim()
+          def city = driver.findElement(By.xpath('//*[@id="maincontent"]/div[2]/div/div[1]/span[5]')).text
+          city = city.substring(1, city.length() - 3).trim()
+          return "${city}\t${city}\t${englishAirport(airport)}\t${spanishAirport(airport)}"
+        }
+        catch (NoSuchElementException ex) {
+          return '\t\t\t'
+        }
+    }
+    
+    private String expandAbbreviations(String airport) {
+      ABBREVIATIONS.each { key, value ->
+        airport = airport.replace(key, value)
+      }
+      airport
     }
     
     private String englishAirport(String airport) {
+      airport = expandAbbreviations(airport)
       if (AIRPORT_LABELS.any { airport.contains(it) }) {
         return airport
       }
@@ -72,11 +94,14 @@ class CodeSearch {
     
     private String spanishAirport(String airport) {
       for (label in AIRPORT_LABELS) {
-        airport = (airport =~ ' ' + label).replaceAll('')
+        airport = airport.replace(' ' + label, '')
       }
+      airport = expandAbbreviations(airport)
+      def county = airport.contains('County') ? ' del Condado' : ''
       def international = airport.contains('International') ? ' Internacional' : ''
-      airport = (airport =~ ' International').replaceAll('')
-      "Aeropuerto${international} de ${airport}"
+      airport = airport.replace(' International', '')
+      airport = airport.replace(' County', '')
+      "Aeropuerto${international}${county} de ${airport}"
     }
     
     private void setText(String field, String text) {
