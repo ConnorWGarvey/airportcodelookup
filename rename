@@ -1,0 +1,34 @@
+#! /usr/bin/env python3
+
+import fileinput
+import re
+
+airport_labels = ['Airport', 'Field', 'Airstrip']
+
+def makeEnglish(line):
+  if (line.find('Airport') != -1):
+    return line
+  else:
+    return line + ' Airport'
+
+def makeSpanish(line):
+  for label in airport_labels:
+    line = re.sub(r'\w*' + label, '', line)
+  line = 'Aeropuerto de ' + line
+  return line
+
+english = []
+spanish = []
+for line in fileinput.input(['input']):
+  line = line.strip()
+  if (len(line) != 0):
+    english.append(makeEnglish(line))
+    spanish.append(makeSpanish(line))
+
+for line in english:
+  print(line)
+
+print()
+
+for line in spanish:
+  print(line)

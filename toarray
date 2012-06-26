@@ -1,0 +1,39 @@
+#! /usr/bin/env python3
+codes = '''PEA
+PEB
+PED
+PEE
+PEF
+PEG
+PEH
+PEI
+PEJ
+PEK
+PEL
+PEM
+PEN
+PEP
+PEQ
+PER
+PES
+PET
+PEU
+PEV
+PEW
+PEX
+PEY
+PEZ
+PFA
+PFB
+PFC
+PFD
+PFJ
+PFN
+PFO
+PFQ
+PFR'''
+
+for code in codes.splitlines():
+  if (len(code.strip()) > 0):
+    print("'" + code + "', ", end='')
+print()

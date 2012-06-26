@@ -1,0 +1,22 @@
+apply plugin: 'application'
+apply plugin: 'groovy'
+
+group = 'com.reardencommerce.apps.travel.codesearch'
+version = '1.0'
+mainClassName = 'com.CodeSearch'
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  groovy 'org.codehaus.groovy:groovy:1.8.6'
+  compile(
+    'org.seleniumhq.selenium:selenium-java:2.21.0',
+  )
+}
+
+task wrapper(type: Wrapper) {
+  gradleVersion = '1.0'
+}
+
