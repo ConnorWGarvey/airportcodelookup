@@ -58,7 +58,7 @@ class CodeSearch {
         airport = airport.substring(1, airport.length() - 3).trim()
         def city = driver.findElement(By.xpath('//*[@id="maincontent"]/div[2]/div/div[1]/span[5]')).text
         city = city.substring(1, city.length() - 3).trim()
-        println "${city}\t\t${englishAirport(airport)}"
+        println "${city}\t${city}\t${englishAirport(airport)}\t${spanishAirport(airport)}"
     }
     
     private String englishAirport(String airport) {
@@ -74,7 +74,9 @@ class CodeSearch {
       for (label in AIRPORT_LABELS) {
         airport = (airport =~ ' ' + label).replaceAll('')
       }
-      'Aeropuerto de ' + airport
+      def international = airport.contains('International') ? ' Internacional' : ''
+      airport = (airport =~ ' International').replaceAll('')
+      "Aeropuerto${international} de ${airport}"
     }
     
     private void setText(String field, String text) {
