@@ -14,7 +14,11 @@ import org.openqa.selenium.support.ui.WebDriverWait
 
 class CodeSearch {
     private static final AIRPORT_LABELS = ['Airport', 'Field', 'Airstrip']
-    private static final ABBREVIATIONS = ['Int.':'International']
+    private static final ABBREVIATIONS = [
+      ['Int.', 'International'],
+      ['Co',   'County'],
+      ['Intl', 'International'],
+    ]
     private WebDriver driver
     private static ChromeDriverService service
     
@@ -23,9 +27,7 @@ class CodeSearch {
       def search = new CodeSearch()
       search.createDriver()
       def output = new StringBuilder()
-      def codes = '''PHA
-PGZ
-PHC'''
+      def codes = '''PHN'''
       for (code in codes.split('\n')) {
         output.append('\n' + search.doSearch(code:code))
       }
@@ -77,7 +79,7 @@ PHC'''
     
     private String expandAbbreviations(String airport) {
       ABBREVIATIONS.each { key, value ->
-        airport = airport.replace(key, value)
+        airport = airport.replaceAll('\\b' + key + '\\b', value)
       }
       airport
     }
