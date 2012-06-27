@@ -27,7 +27,7 @@ class CodeSearch {
       def search = new CodeSearch()
       search.createDriver()
       def output = new StringBuilder()
-      def codes = '''PHN'''
+      def codes = '''PIB'''
       for (code in codes.split('\n')) {
         output.append('\n' + search.doSearch(code:code))
       }
@@ -69,12 +69,18 @@ class CodeSearch {
           def airport = driver.findElement(By.xpath('//*[@id="maincontent"]/div[2]/div/div[1]/span[2]')).text
           airport = airport.substring(1, airport.length() - 3).trim()
           def city = driver.findElement(By.xpath('//*[@id="maincontent"]/div[2]/div/div[1]/span[5]')).text
-          city = city.substring(1, city.length() - 3).trim()
+          city = parseCity(city)
           return "${city}\t${city}\t${englishAirport(airport)}\t${spanishAirport(airport)}"
         }
         catch (NoSuchElementException ex) {
           return '\t\t\t'
         }
+    }
+    
+    private String parseCity(String city) {
+      city = city.substring(1, city.length() - 3).trim()
+      city = (city =~ /, \p{Upper}{2}$/).replaceAll('')
+      city
     }
     
     private String expandAbbreviations(String airport) {
@@ -94,6 +100,13 @@ class CodeSearch {
       }
     }
     
+    private String removeWords(String line, List<String> words) {
+      for (word in words) {
+        line = line.replaceAll('\\s*\\b' + word + '\\b\\s*', ' ').trim()
+      }
+      line
+    }
+    
     private String spanishAirport(String airport) {
       for (label in AIRPORT_LABELS) {
         airport = airport.replace(' ' + label, '')
@@ -101,9 +114,9 @@ class CodeSearch {
       airport = expandAbbreviations(airport)
       def county = airport.contains('County') ? ' del Condado' : ''
       def international = airport.contains('International') ? ' Internacional' : ''
-      airport = airport.replace(' International', '')
-      airport = airport.replace(' County', '')
-      "Aeropuerto${international}${county} de ${airport}"
+      def regional = airport.contains('Regional') ? ' Regional' : ''
+      airport = removeWords(airport, ['County', 'International', 'Regional'])
+      "Aeropuerto${international}${regional}${county} de ${airport}"
     }
     
     private void setText(String field, String text) {
