@@ -27,7 +27,10 @@ class CodeSearch {
       def search = new CodeSearch()
       search.createDriver()
       def output = new StringBuilder()
-      def codes = '''PIB'''
+      def codes = '''PKH
+PKJ
+PKK
+PKL'''
       for (code in codes.split('\n')) {
         output.append('\n' + search.doSearch(code:code))
       }
@@ -114,9 +117,10 @@ class CodeSearch {
       airport = expandAbbreviations(airport)
       def county = airport.contains('County') ? ' del Condado' : ''
       def international = airport.contains('International') ? ' Internacional' : ''
+      def municipal = airport.contains('Municipal') ? ' Municipal' : ''
       def regional = airport.contains('Regional') ? ' Regional' : ''
-      airport = removeWords(airport, ['County', 'International', 'Regional'])
-      "Aeropuerto${international}${regional}${county} de ${airport}"
+      airport = removeWords(airport, ['County', 'International', 'Municipal', 'Regional'])
+      "Aeropuerto${international}${regional}${municipal}${county} de ${airport}"
     }
     
     private void setText(String field, String text) {
